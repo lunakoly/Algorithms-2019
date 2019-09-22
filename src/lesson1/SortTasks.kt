@@ -2,6 +2,18 @@
 
 package lesson1
 
+import java.io.File
+
+
+/**
+ * Throws an Exception if the condition fails
+ */
+inline fun ensure(condition: () -> Boolean) {
+    if (!condition()) {
+        throw Exception("Incorrect format")
+    }
+}
+
 /**
  * Сортировка времён
  *
@@ -33,7 +45,38 @@ package lesson1
  * В случае обнаружения неверного формата файла бросить любое исключение.
  */
 fun sortTimes(inputName: String, outputName: String) {
-    TODO()
+    // just a helper for passing tuple-4
+    data class Time(
+        var hours: Int,
+        var minutes: Int,
+        var seconds: Int,
+        var period: String
+    )
+
+    val text = File(inputName).readLines()
+        .map {
+            val match = "(\\d\\d):(\\d\\d):(\\d\\d) (AM|PM)".toRegex().find(it)
+                ?: throw Exception("Incorrect format")
+
+            val hours = match.groupValues[1].toInt()
+            val minutes = match.groupValues[2].toInt()
+            val seconds = match.groupValues[3].toInt()
+            val period = match.groupValues[4]
+
+            ensure { hours in 0..12 }
+            ensure { minutes in 0..59 }
+            ensure { seconds in 0..59 }
+
+            Time(hours, minutes, seconds, period) to it
+        }
+        .sortedWith(
+            // `% 12` because `12 AM` is actually `0 AM`
+            compareBy({ it.first.period }, { it.first.hours % 12 }, { it.first.minutes }, { it.first.seconds })
+        ).joinToString("\n") {
+            it.second
+        }
+
+    File(outputName).writeText(text)
 }
 
 /**
@@ -63,7 +106,27 @@ fun sortTimes(inputName: String, outputName: String) {
  * В случае обнаружения неверного формата файла бросить любое исключение.
  */
 fun sortAddresses(inputName: String, outputName: String) {
-    TODO()
+    val text = File(inputName).readLines()
+        .map {
+            "(\\S+ \\S+) - (\\S+) (\\d+)".toRegex().find(it)
+                ?: throw Exception("Incorrect format")
+        }
+        .groupBy(
+            keySelector = { it.groupValues[2] to it.groupValues[3] },
+            valueTransform = { it.groupValues[1] }
+        )
+        .mapValues {
+            it.value.sorted()
+        }
+        .toSortedMap(
+            compareBy({ it.first }, { it.second.toInt() })
+        )
+        .map {
+            it.key.first + " " + it.key.second + " - " + it.value.joinToString(", ")
+        }
+        .joinToString("\n")
+
+    File(outputName).writeText(text)
 }
 
 /**
@@ -97,7 +160,14 @@ fun sortAddresses(inputName: String, outputName: String) {
  * 121.3
  */
 fun sortTemperatures(inputName: String, outputName: String) {
-    TODO()
+    val text = File(inputName).readLines()
+        .map {
+            it.toFloat()
+        }
+        .sorted()
+        .joinToString("\n")
+
+    File(outputName).writeText(text)
 }
 
 /**
@@ -130,7 +200,38 @@ fun sortTemperatures(inputName: String, outputName: String) {
  * 2
  */
 fun sortSequence(inputName: String, outputName: String) {
-    TODO()
+    val numbers = File(inputName).readLines()
+        .map { it.toInt() }
+
+    var counts = numbers
+        .groupingBy { it }
+        .eachCount()
+
+    val maxValue = counts.values
+        .max()
+        ?: 0
+
+    counts = counts.filter { it.value == maxValue }
+
+    val target = counts.keys
+        .min()
+        ?: 0
+
+    val reducedNumbers = mutableListOf<Int>()
+    val appendix = mutableListOf<Int>()
+
+    numbers.forEach {
+        if (it != target) {
+            reducedNumbers.add(it)
+        } else {
+            appendix.add(it)
+        }
+    }
+
+    val text = (reducedNumbers + appendix)
+        .joinToString("\n")
+
+    File(outputName).writeText(text)
 }
 
 /**
@@ -148,6 +249,18 @@ fun sortSequence(inputName: String, outputName: String) {
  * Результат: second = [1 3 4 9 9 13 15 20 23 28]
  */
 fun <T : Comparable<T>> mergeArrays(first: Array<T>, second: Array<T?>) {
-    TODO()
+    var secondIndex = first.size
+    var firstIndex = 0
+
+    for (it in second.indices) {
+        if (
+            secondIndex >= second.size ||
+            firstIndex < first.size && first[firstIndex] <= second[secondIndex]!!
+        ) {
+            second[it] = first[firstIndex++]
+        } else {
+            second[it] = second[secondIndex++]
+        }
+    }
 }
 
