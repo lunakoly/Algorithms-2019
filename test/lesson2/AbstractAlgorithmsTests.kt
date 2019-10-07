@@ -1,5 +1,6 @@
 package lesson2
 
+import org.junit.jupiter.api.assertThrows
 import java.io.BufferedWriter
 import java.io.File
 import java.util.*
@@ -58,6 +59,12 @@ abstract class AbstractAlgorithmsTests {
         } finally {
             File("temp_prices.txt").delete()
         }
+        assertThrows<Exception>("Incorrect input") {
+            optimizeBuyAndSell("input/buysell_in4.txt")
+        }
+        assertThrows<Exception>("Incorrect format") {
+            optimizeBuyAndSell("input/buysell_in5.txt")
+        }
     }
 
     fun josephTask(josephTask: (Int, Int) -> Int) {
@@ -71,6 +78,7 @@ abstract class AbstractAlgorithmsTests {
             assertEquals(1, josephTask(menNumber, 2))
             menNumber *= 2
         }
+        assertEquals(1, josephTask(1, 1000))
     }
 
     fun longestCommonSubstring(longestCommonSubstring: (String, String) -> String) {

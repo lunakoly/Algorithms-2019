@@ -2,6 +2,10 @@
 
 package lesson2
 
+import java.io.File
+import kotlin.Exception
+import kotlin.math.max
+
 /**
  * Получение наибольшей прибыли (она же -- поиск максимального подмассива)
  * Простая
@@ -25,9 +29,83 @@ package lesson2
  * Например, для приведённого выше файла результат должен быть Pair(3, 4)
  *
  * В случае обнаружения неверного формата файла бросить любое исключение.
+ *
+ *   Time Complexity: Θ(n), n - number of numbers
+ * Memory Complexity: Θ(n)
+ *
+ * It may be possible to solve the task with Θ(1) memory
+ * but mglukhikh once told us during a lecture that there's
+ * no way to implement an Θ(n) time algorithm for this task via
+ * just searching for max and min. Let's prove the opposite
  */
 fun optimizeBuyAndSell(inputName: String): Pair<Int, Int> {
-    TODO()
+    val prices = File(inputName).readLines()
+        // linear
+        .map {
+            """\d+""".toRegex().find(it)
+                ?: throw Exception("Incorrect format")
+
+            it.toInt()
+        }
+
+    if (prices.isEmpty())
+        throw Exception("Incorrect input")
+
+    // minimum price that has been detected before
+    // and including the i-th day
+    val minPrice = IntArray(prices.size)
+    // the day the min price has been detected
+    val minPriceDay = IntArray(prices.size)
+
+    // start from the first day and propagate further
+    minPrice[0] = prices[0]
+    minPriceDay[0] = 0
+
+    // linear
+    for (it in 1 until prices.size) {
+        if (prices[it] < minPrice[it - 1]) {
+            minPrice[it] = prices[it]
+            minPriceDay[it] = it
+        } else {
+            minPrice[it] = minPrice[it - 1]
+            minPriceDay[it] = minPriceDay[it - 1]
+        }
+    }
+
+    // maximum price that has been detected since
+    // and including the i-th day
+    val maxPrice = IntArray(prices.size)
+    // the day the max price has been detected
+    val maxPriceDay = IntArray(prices.size)
+
+    // start from the last day and propagate further backwards
+    maxPrice[prices.lastIndex] = prices.last()
+    maxPriceDay[prices.lastIndex] = prices.lastIndex
+
+    // linear
+    for (it in prices.size - 2 downTo 0) {
+        if (prices[it] > maxPrice[it + 1]) {
+            maxPrice[it] = prices[it]
+            maxPriceDay[it] = it
+        } else {
+            maxPrice[it] = maxPrice[it + 1]
+            maxPriceDay[it] = maxPriceDay[it + 1]
+        }
+    }
+
+    var bestDifference = 0
+    var bestPeriod = 1 to 1
+
+    // linear
+    for (it in prices.indices) {
+        if (maxPrice[it] - minPrice[it] > bestDifference) {
+            bestDifference = maxPrice[it] - minPrice[it]
+            // days should start with 1
+            bestPeriod = minPriceDay[it] + 1 to maxPriceDay[it] + 1
+        }
+    }
+
+    return bestPeriod
 }
 
 /**
@@ -78,9 +156,19 @@ fun optimizeBuyAndSell(inputName: String): Pair<Int, Int> {
  *
  * Общий комментарий: решение из Википедии для этой задачи принимается,
  * но приветствуется попытка решить её самостоятельно.
+ *
+ *   Time Complexity: Θ(n), n - menNumber
+ * Memory Complexity: Θ(1)
  */
 fun josephTask(menNumber: Int, choiceInterval: Int): Int {
-    TODO()
+    // menNumber = 1
+    var previous = 1
+
+    for (it in 2..menNumber) {
+        previous = (choiceInterval - 1 + previous) % it + 1
+    }
+
+    return previous
 }
 
 /**
