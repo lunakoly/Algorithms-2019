@@ -180,6 +180,21 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         }
 
         println("sortTemperatures: $perf")
+
+        try {
+            sortTemperatures("input/temp_in2.txt", "temp.txt")
+            assertFileContent("temp.txt", """""".trimIndent())
+        } finally {
+            File("temp.txt").delete()
+        }
+
+        try {
+            assertThrows<Exception>("Incorrect format") {
+                sortTemperatures("input/temp_in3.txt", "temp.txt")
+            }
+        } finally {
+            File("temp.txt").delete()
+        }
     }
 
     private fun generateSequence(totalSize: Int, answerSize: Int): PerfResult<Unit> {

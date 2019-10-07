@@ -3,6 +3,7 @@
 package lesson1
 
 import java.io.File
+import kotlin.math.round
 
 
 /**
@@ -167,35 +168,6 @@ fun sortAddresses(inputName: String, outputName: String) {
     File(outputName).writeText(text)
 }
 
-fun radixStringSort(elements: Array<String>, limit: Int): Array<String> {
-    for (it in 0 until limit) {
-        val count = IntArray(10) { 0 }
-
-        for (that in elements) {
-            val symbol = that.getOrElse(that.length - 1 - it) { '0' }
-            count[symbol - '0']++
-        }
-
-        for (that in 1 until count.size) {
-            count[that] += count[that - 1]
-        }
-
-        val sorted = Array(elements.size) { "" }
-
-        for (that in elements.reversed()) {
-            val symbol = that.getOrElse(that.length - 1 - it) { '0' }
-            count[symbol - '0']--
-            sorted[count[symbol - '0']] = that
-        }
-
-        for (that in sorted.indices) {
-            elements[that] = sorted[that]
-        }
-    }
-
-    return elements
-}
-
 /**
  * Сортировка температур
  *
@@ -225,50 +197,44 @@ fun radixStringSort(elements: Array<String>, limit: Int): Array<String> {
  * 24.7
  * 99.5
  * 121.3
+ *
+ *   Time Complexity: Θ(n), n - number of numbers
+ * Memory Complexity: Θ(n)
  */
 fun sortTemperatures(inputName: String, outputName: String) {
-    val positives = mutableListOf<String>()
-    val negatives = mutableListOf<String>()
+    val positives = mutableListOf<Int>()
+    val negatives = mutableListOf<Int>()
 
     File(inputName).readLines()
+        // linear
         .forEach {
-            val match = """-?(\d+)\.(\d)""".toRegex().find(it)
+            """-?(\d+)\.(\d)""".toRegex().find(it)
                 ?: throw Exception("Incorrect format")
 
-            val target = if (it.startsWith('-')) negatives else positives
-            target.add(match.groupValues[1] + match.groupValues[2])
+            val number = (it.toFloat() * 10).toInt()
+
+            if (number < 0) {
+                negatives.add(number * -1)
+            } else {
+                positives.add(number)
+            }
         }
 
-    var positivesArray = positives.toTypedArray()
-    var negativesArray = negatives.toTypedArray()
+    // linear
+    val positivesArray = countingSort(positives.toIntArray(), 5000)
+    val negativesArray = countingSort(negatives.toIntArray(), 2730)
 
-    // for some reason arrays get passed by value (?!)
-    positivesArray = radixStringSort(positivesArray, 4)
-    negativesArray = radixStringSort(negativesArray, 4)
-
-    fun toNumber(it: String): String {
-        var first = it.substring(0, it.length - 1)
-        var second = it.substring(it.length - 1)
-
-        if (first.isEmpty()) {
-            first = "0"
-        }
-
-        if (second.isEmpty()) {
-            second = "0"
-        }
-
-        return "$first.$second"
-    }
-
+    // linear
     val negativesPart = negativesArray.reversedArray().joinToString("\n") {
-        "-" + toNumber(it)
+        "-" + (it.toFloat() / 10)
     }
 
+    // linear
     val positivesPart = positivesArray.joinToString("\n") {
-        toNumber(it)
+        "" + (it.toFloat() / 10)
     }
 
+    // linear
     val parts = listOf(negativesPart, positivesPart)
         .filter { it.isNotEmpty() }
         .joinToString("\n")
