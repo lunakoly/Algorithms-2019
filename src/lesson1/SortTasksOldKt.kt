@@ -21,7 +21,7 @@ const val TIME_NUMERICAL_REPRESENTATION_LENGTH = 8
  * Given a `HH:MM:SS TT`-like string returns a `1THHMMSS`-like int.
  */
 fun getTimeNumericalRepresentation(it: String): Int {
-    ensure { "\\d\\d:\\d\\d:\\d\\d (?:AM|PM)".toRegex() matches it }
+    ensure { "\\d\\d:\\d\\d:\\d\\d (?:AM|PM)".toRegex() matches it } or { "Incorrect format" }
 
     val numeric = if (it.contains("AM")) {
         "0:" + it.subSequence(0, it.length - 3)
@@ -31,9 +31,9 @@ fun getTimeNumericalRepresentation(it: String): Int {
 
     val parts = numeric.split(":")
 
-    ensure { parts[0].toInt() in 0..23 }
-    ensure { parts[1].toInt() in 0..59 }
-    ensure { parts[2].toInt() in 0..59 }
+    ensure { parts[0].toInt() in 0..23 } or { "Incorrect format" }
+    ensure { parts[1].toInt() in 0..59 } or { "Incorrect format" }
+    ensure { parts[2].toInt() in 0..59 } or { "Incorrect format" }
 
     // this 1 is here to save a possible leading zero
     val simplified = "1" + parts.joinToString("")
