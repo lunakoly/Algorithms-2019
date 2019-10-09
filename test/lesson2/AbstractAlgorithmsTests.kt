@@ -180,5 +180,16 @@ abstract class AbstractAlgorithmsTests {
                 )
             )
         )
+        assertEquals(
+            setOf(),
+            baldaSearcher("input/balda_in4.txt", setOf())
+        )
+        assertThrows<Exception>("Table of symbols must be rectangular") {
+            baldaSearcher("input/balda_in5.txt", setOf("ЛОЛ"))
+        }
+        assertEquals(
+            setOf("ТАРАКАН"),
+            baldaSearcher("input/balda_in6.txt", setOf("ТАРАКАН"))
+        )
     }
 }

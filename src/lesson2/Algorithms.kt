@@ -186,6 +186,7 @@ fun josephTask(menNumber: Int, choiceInterval: Int): Int {
  *   Time Complexity: Θ(mn), m - length of the first string
  * Memory Complexity: Θ(mn), n - length of the second string
  */
+@Suppress("unused")
 fun longestCommonSubstringOld(first: String, second: String): String {
     if (first.isEmpty() || second.isEmpty())
         return ""
@@ -363,12 +364,12 @@ fun calcPrimesNumber(limit: Int): Int {
 }
 
 /**
- * A tree that represents a set of words. Same idea as
- * for prefix trees but for single characters instead of
- * prefixes. (I probably should have used a prefix tree but
- * it had been too late by the time I realized it)
+ * A prefix tree. A separate instance of CharTree is used to
+ * represent each possible prefix extension (for a word of length n
+ * there will be n separate instances of CharTree each presenting
+ * a different prefix [+1 CharTree for the root])
  */
-class CharTree(private val value: Char) {
+class CharTree(private val prefix: String = "") {
     /**
      * Subtrees
      */
@@ -403,7 +404,7 @@ class CharTree(private val value: Char) {
         var next = children[string[index]]
 
         if (next == null) {
-            next = CharTree(string[index])
+            next = CharTree(string.substring(0, index + 1))
             children[string[index]] = next
         }
 
@@ -446,6 +447,24 @@ class CharTree(private val value: Char) {
     }
 
     /**
+     * Returns the total number of words that start
+     * with the given prefix
+     *
+     *   Time Complexity: O(n), n - length of the prefix
+     * Memory Complexity: Θ(1)
+     */
+    fun countFor(string: String, index: Int = 0): Int {
+        if (index == string.length) {
+            return count
+        }
+
+        val next = children[string[index]]
+            ?: return 0
+
+        return next.countFor(string, index + 1)
+    }
+
+    /**
      * Creates a set based on this tree contents
      *
      *   Time Complexity: Θ(n), n - number of nodes
@@ -455,23 +474,18 @@ class CharTree(private val value: Char) {
         // dfs
         val result = mutableSetOf<String>()
         val nodes = LinkedList<CharTree>()
-        // I definitely should have used prefix trees
-        val prefixes = LinkedList<String>()
 
         nodes.add(this)
-        prefixes.add("")
 
         while (nodes.size > 0) {
             val node = nodes.removeLast()
-            val prefix = prefixes.removeLast()
 
             if (node.isEnd) {
-                result.add(prefix)
+                result.add(node.prefix)
             }
 
             for (it in node.children) {
                 nodes.add(it.value)
-                prefixes.add(prefix + it.value.value)
             }
         }
 
@@ -481,6 +495,7 @@ class CharTree(private val value: Char) {
     /**
      * For debugging
      */
+    @Suppress("MemberVisibilityCanBePrivate", "unused")
     fun print(prefix: String = "-") {
         for (it in children.keys) {
             kotlin.io.print("$prefix $it (${children[it]?.count})")
@@ -543,9 +558,14 @@ class CharVertex(private val value: Char) {
             wordsTree.tryRemove(prefix)
 
             for (each in vertex.children) {
-                if (!history.contains(each)) {
+                val furtherPrefix = prefix + each.value
+
+                if (
+                    !history.contains(each) &&
+                    wordsTree.countFor(furtherPrefix) > 0
+                ) {
                     vertices.add(each)
-                    prefixes.add(prefix + each.value)
+                    prefixes.add(furtherPrefix)
                     visited.add((history + vertex) as MutableSet<CharVertex>)
                 }
             }
@@ -583,7 +603,10 @@ class CharVertex(private val value: Char) {
  * Memory Complexity: Θ(l),     k - average string length
  */
 fun baldaSearcher(inputName: String, words: Set<String>): Set<String> {
-    val wordsTree = CharTree(' ')
+    if (words.isEmpty())
+        return emptySet()
+
+    val wordsTree = CharTree()
 
     // linear for the number of words
     for (it in words) {
@@ -598,6 +621,16 @@ fun baldaSearcher(inputName: String, words: Set<String>): Set<String> {
                 .toTypedArray()
         }
         .toTypedArray()
+
+    if (letters.isEmpty())
+        return emptySet()
+
+    // linear
+    for (i in 1 until letters.size) {
+        if (letters[i - 1].size != letters[i].size) {
+            throw Exception("Table of symbols must be rectangular")
+        }
+    }
 
     // linear
     for (i in 1 until letters.size) {
@@ -625,11 +658,6 @@ fun baldaSearcher(inputName: String, words: Set<String>): Set<String> {
             letters[i][j].scan(wordsTree)
         }
     }
-
-//    wordsTree.print()
-//    println()
-//
-//    println("To set: " + wordsTree.toSet())
 
     return words - wordsTree.toSet()
 }
