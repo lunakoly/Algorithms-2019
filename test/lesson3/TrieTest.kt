@@ -54,5 +54,18 @@ class TrieTest {
         trie.add("abcde")
 
         assertEquals(setOf("abcdefg", "zyx", "zwv", "zyt", "abcde"), trie)
+
+        val it = trie.iterator()
+
+        while (it.hasNext()) {
+            val next = it.next()
+
+            if (
+                next == "abcdefg" ||
+                next == "zyt"
+            ) it.remove()
+        }
+
+        assertEquals(setOf("zyx", "zwv", "abcde"), trie)
     }
 }
