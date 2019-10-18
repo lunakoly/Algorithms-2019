@@ -70,17 +70,17 @@ class Trie : AbstractMutableSet<String>(), MutableSet<String> {
          * Stack of prefixes of nodes to be checked
          * Used for DFS.
          */
-        val prefixes = LinkedList<String>()
+        private val prefixes = LinkedList<String>()
         /**
          * Stack of nodes to be checked
          * Used for DFS.
          */
-        val nodes = LinkedList<Node>()
+        private val nodes = LinkedList<Node>()
         /**
          * The last value returned from
          * next(). Used for deleting
          */
-        var current: String? = null
+        private var current: String? = null
 
         init {
             // prepare for dfs

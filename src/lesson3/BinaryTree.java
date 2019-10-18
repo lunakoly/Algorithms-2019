@@ -9,6 +9,11 @@ import java.util.*;
 // Attention: comparable supported but comparator is not
 public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implements CheckableSortedSet<T> {
 
+    @Override
+    public void visualize() {
+
+    }
+
     private static class Node<T> {
         final T value;
 

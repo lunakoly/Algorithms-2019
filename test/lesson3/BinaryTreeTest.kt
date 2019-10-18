@@ -66,9 +66,16 @@ class BinaryTreeTest {
             val originalHeight = binarySet.height()
             val toRemove = list[random.nextInt(list.size)]
             val oldSize = binarySet.size
+
+//            println("++++++++++++++++++")
+            println("Removing $toRemove from $list")
+//            binarySet.visualize()
+
             assertTrue(binarySet.remove(toRemove))
             assertEquals(oldSize - 1, binarySet.size)
-            println("Removing $toRemove from $list")
+
+//            binarySet.visualize()
+
             for (element in list) {
                 val inn = element != toRemove
                 assertEquals(
@@ -113,6 +120,8 @@ class BinaryTreeTest {
             val treeIt = treeSet.iterator()
             val binaryIt = binarySet.iterator()
             println("Traversing $list")
+
+
             while (treeIt.hasNext()) {
                 assertEquals(treeIt.next(), binaryIt.next(), "Incorrect iterator state while iterating $treeSet")
             }
@@ -157,6 +166,10 @@ class BinaryTreeTest {
             val toRemove = list[random.nextInt(list.size)]
             treeSet.remove(toRemove)
             println("Removing $toRemove from $list")
+
+//            println("++++++++++")
+//            binarySet.visualize()
+
             val iterator = binarySet.iterator()
             var counter = binarySet.size
             while (iterator.hasNext()) {
@@ -167,6 +180,9 @@ class BinaryTreeTest {
                     iterator.remove()
                 }
             }
+
+//            binarySet.visualize()
+
             assertEquals(
                 0, counter,
                 "Iterator.remove() of $toRemove from $list changed iterator position: " +
