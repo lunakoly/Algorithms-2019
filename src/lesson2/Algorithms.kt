@@ -5,7 +5,6 @@ package lesson2
 import java.io.File
 import java.util.*
 import kotlin.Exception
-import kotlin.math.sqrt
 
 /**
  * Получение наибольшей прибыли (она же -- поиск максимального подмассива)
@@ -32,12 +31,7 @@ import kotlin.math.sqrt
  * В случае обнаружения неверного формата файла бросить любое исключение.
  *
  *   Time Complexity: Θ(n), n - number of numbers
- * Memory Complexity: Θ(n)
- *
- * It may be possible to solve the task with Θ(1) memory
- * but mglukhikh once told us during a lecture that there's
- * no way to implement an Θ(n) time algorithm for this task via
- * just searching for max and min. Let's prove the opposite
+ * Memory Complexity: Θ(1)
  */
 fun optimizeBuyAndSell(inputName: String): Pair<Int, Int> {
     val prices = File(inputName).readLines()
@@ -52,61 +46,28 @@ fun optimizeBuyAndSell(inputName: String): Pair<Int, Int> {
     if (prices.isEmpty())
         throw Exception("Incorrect input")
 
-    // minimum price that has been detected before
-    // and including the i-th day
-    val minPrice = IntArray(prices.size)
-    // the day the min price has been detected
-    val minPriceDay = IntArray(prices.size)
+    // Θ(1)
+    fun delta(period: Pair<Int, Int>) = prices[period.second] - prices[period.first]
 
-    // start from the first day and propagate further
-    minPrice[0] = prices[0]
-    minPriceDay[0] = 0
+    // buyIndex to sellIndex
+    var bestPeriod = 0 to 0
+    // when to buy
+    var minIndex = 0
 
     // linear
     for (it in 1 until prices.size) {
-        if (prices[it] < minPrice[it - 1]) {
-            minPrice[it] = prices[it]
-            minPriceDay[it] = it
-        } else {
-            minPrice[it] = minPrice[it - 1]
-            minPriceDay[it] = minPriceDay[it - 1]
+        if (prices[it] < prices[minIndex]) {
+            minIndex = it
+        }
+
+        val newTrailingPeriod = minIndex to it
+
+        if (delta(newTrailingPeriod) > delta(bestPeriod)) {
+            bestPeriod = newTrailingPeriod
         }
     }
 
-    // maximum price that has been detected since
-    // and including the i-th day
-    val maxPrice = IntArray(prices.size)
-    // the day the max price has been detected
-    val maxPriceDay = IntArray(prices.size)
-
-    // start from the last day and propagate further backwards
-    maxPrice[prices.lastIndex] = prices.last()
-    maxPriceDay[prices.lastIndex] = prices.lastIndex
-
-    // linear
-    for (it in prices.size - 2 downTo 0) {
-        if (prices[it] > maxPrice[it + 1]) {
-            maxPrice[it] = prices[it]
-            maxPriceDay[it] = it
-        } else {
-            maxPrice[it] = maxPrice[it + 1]
-            maxPriceDay[it] = maxPriceDay[it + 1]
-        }
-    }
-
-    var bestDifference = 0
-    var bestPeriod = 1 to 1
-
-    // linear
-    for (it in prices.indices) {
-        if (maxPrice[it] - minPrice[it] > bestDifference) {
-            bestDifference = maxPrice[it] - minPrice[it]
-            // days should start with 1
-            bestPeriod = minPriceDay[it] + 1 to maxPriceDay[it] + 1
-        }
-    }
-
-    return bestPeriod
+    return bestPeriod.first + 1 to bestPeriod.second + 1
 }
 
 /**
@@ -328,36 +289,53 @@ fun longestCommonSubstring(first: String, second: String): String {
  * Справка: простым считается число, которое делится нацело только на 1 и на себя.
  * Единица простым числом не считается.
  *
- *   Time Complexity: Θ(n * sqrt(n)), n - number
- * Memory Complexity: Θ(1)
+ *   Time Complexity: O(n^2), n - number
+ * Memory Complexity: Θ(n)
  */
 fun calcPrimesNumber(limit: Int): Int {
     if (limit <= 1)
         return 0
 
-    /**
-     * Returns true if the number is prime
-     *
-     *   Time Complexity: Θ(sqrt(n)), n - number
-     * Memory Complexity: Θ(1)
-     */
-    fun isPrime(number: Int): Boolean {
-        if (number == 1)
-            return false
+    // isPrime[i] == true <=> i - prime
+    // isPrime[0] and isPrime[1] are not used
+    // and left here for readability
+    val isPrime = BooleanArray(limit + 1) { true }
+    // next always points to the next prime
+    var next = 2
 
-        for (it in 2..sqrt(number.toFloat()).toInt())
-            if (number % it == 0)
-                return false
+    // O(n^2) because I can't tell for sure
+    // how many prime numbers are there
+    while (next < isPrime.size) {
+        // mark all multiples of next as non-prime
+        // O(n) time
+        for (it in next + next until isPrime.size step next) {
+            isPrime[it] = false
+        }
 
-        return true
+        // search the next prime starting with it
+        val checkFrom = next + 1
+        // if we won't find the next prime we'll
+        // use the out-of-range index to stop the outer while
+        next = isPrime.size
+
+        // find the next prime
+        // O(n) time
+        for (it in checkFrom until isPrime.size) {
+            if (isPrime[it]) {
+                next = it
+                break
+            }
+        }
     }
 
     var count = 0
 
-    // Θ(n * sqrt(n))
-    for (it in 2..limit) {
-        if (isPrime(it))
-            count += 1
+    // count primes in array
+    // O(n) time
+    for (it in 2 until isPrime.size) {
+        if (isPrime[it]) {
+            count++
+        }
     }
 
     return count
