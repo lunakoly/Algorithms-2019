@@ -213,4 +213,80 @@ class BinaryTreeTest {
     fun testIteratorRemoveJava() {
         testIteratorRemove { createJavaTree() }
     }
+
+    private fun testSubSet(create: () -> CheckableSortedSet<Int>) {
+        val empty = create()
+        val emptySubSet = empty.subSet(0, 0)
+        assertEquals(0, emptySubSet.size)
+
+        val primitive = create()
+
+        for (it in 0 until 10) {
+            primitive.add(it)
+        }
+
+        val primitiveSubSet = primitive.subSet(3, 7)
+        assertEquals(4, primitiveSubSet.size)
+
+        for (it in 3 until 7) {
+            assertEquals(true, it in primitiveSubSet)
+        }
+    }
+
+    @Test
+    @Tag("Hard")
+    fun testSubSetKotlin() {
+        testSubSet { createKotlinTree() }
+    }
+
+    private fun testHeadSet(create: () -> CheckableSortedSet<Int>) {
+        val empty = create()
+        val emptySubSet = empty.headSet(123)
+        assertEquals(0, emptySubSet.size)
+
+        val primitive = create()
+
+        for (it in 0 until 10) {
+            primitive.add(it)
+        }
+
+        val primitiveSubSet = primitive.headSet(6)
+        assertEquals(6, primitiveSubSet.size)
+
+        for (it in 0 until 6) {
+            assertEquals(true, it in primitiveSubSet)
+        }
+    }
+
+    @Test
+    @Tag("Hard")
+    fun testHeadSetKotlin() {
+        testHeadSet { createKotlinTree() }
+    }
+
+    private fun testTailSet(create: () -> CheckableSortedSet<Int>) {
+        val empty = create()
+        val emptySubSet = empty.tailSet(123)
+        assertEquals(0, emptySubSet.size)
+
+        val primitive = create()
+
+        for (it in 0 until 10) {
+            primitive.add(it)
+        }
+
+        val primitiveSubSet = primitive.tailSet(4)
+        println(primitiveSubSet)
+        assertEquals(6, primitiveSubSet.size)
+
+        for (it in 4 until 10) {
+            assertEquals(true, it in primitiveSubSet)
+        }
+    }
+
+    @Test
+    @Tag("Hard")
+    fun testTailSetKotlin() {
+        testTailSet { createKotlinTree() }
+    }
 }

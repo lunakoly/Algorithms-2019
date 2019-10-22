@@ -330,7 +330,7 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
             val previous = current
 
             if (previous != null) {
-                val (success, replacement) = erase(previous.value)
+                val (_, replacement) = erase(previous.value)
 
                 if (replacement != null && !visited.contains(replacement)) {
                     // I assume it's Θ(1)
@@ -366,14 +366,22 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
     /**
      * Найти множество всех элементов в диапазоне [fromElement, toElement)
      * Очень сложная
+     *
+     *   Time Complexity: O(n),    n - number of nodes
+     * Memory Complexity: Θ(logn)
      */
     override fun subSet(fromElement: T, toElement: T): SortedSet<T> {
         var start = root ?: return emptySet<T>().toSortedSet()
 
+        // sort of a dfs search
+        // O(logn) memory
         val nodes = LinkedList<Node<T>>()
         val visited = mutableSetOf<Node<T>>()
         val result = mutableSetOf<T>().toSortedSet()
 
+        // find th first element. nodes will contain
+        // the route to the fist element
+        // O(logn) time
         do {
             val comparison = fromElement.compareTo(start.value)
             nodes.add(start)
@@ -385,28 +393,52 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
             }
         } while (comparison != 0)
 
+        // check if it is really satisfies our range
+        // and is not smaller than fromElement.
+        // otherwise we remove every trailing element
+        // less than fromElement
+        // O(logn) time
         while (nodes.size > 0) {
             val last = nodes.last()
 
             if (last.value < fromElement) {
                 nodes.removeLast()
+            } else {
+                break
             }
         }
 
+        // no suitable nodes left
         if (nodes.size == 0) {
             return emptySet<T>().toSortedSet()
         }
 
+        // the idea is to walk through the tree like:
+        //    *         *         *         *
+        //   * -       + *       + *       + *
+        //  *   -     +   -     +   *     +   *
+        // *   - -   +   - -   +   - -   +   * -
+        // check all bottom-left paths and after
+        // that make a step to every righter bottom-left 'sub-path'
+
+        // sort of a dfs.
+        // O(n)
         while (nodes.size > 0) {
             val last = nodes.removeLast()
 
             val lefter = last.left
             val righter = last.right
 
+            // haven't checked the lefter
             if (lefter != null && !visited.contains(lefter)) {
+                // we always contain the route from to the lefter
                 nodes.add(last)
                 nodes.add(lefter)
             } else if (!visited.contains(last)) {
+                // since we've already checked all elements
+                // < last.value, we know that only
+                // the bigger ones left in the tree but
+                // we don't need them
                 if (last.value >= toElement) {
                     break
                 }
@@ -427,17 +459,30 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
     /**
      * Найти множество всех элементов меньше заданного
      * Сложная
+     *
+     *   Time Complexity: O(n),    n - number of nodes
+     * Memory Complexity: Θ(logn)
      */
     override fun headSet(toElement: T): SortedSet<T> {
-        TODO()
+        if (root == null)
+            return emptySet<T>().toSortedSet()
+        return subSet(first(), toElement)
     }
 
     /**
      * Найти множество всех элементов больше или равных заданного
      * Сложная
+     *
+     *   Time Complexity: O(n),    n - number of nodes
+     * Memory Complexity: Θ(logn)
      */
     override fun tailSet(fromElement: T): SortedSet<T> {
-        TODO()
+        if (root == null)
+            return emptySet<T>().toSortedSet()
+
+        val result = subSet(fromElement, last())
+        result.add(last())
+        return result
     }
 
     override fun first(): T {
