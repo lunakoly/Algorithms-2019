@@ -291,6 +291,11 @@ fun longestCommonSubstring(first: String, second: String): String {
  *
  *   Time Complexity: O(n^2), n - number
  * Memory Complexity: Θ(n)
+ *
+ *          This algorithm time complexity can
+ *          be proved to have O(n log(logn)) time but
+ *          my level of number theory isn't good
+ *          enough to do it
  */
 fun calcPrimesNumber(limit: Int): Int {
     if (limit <= 1)

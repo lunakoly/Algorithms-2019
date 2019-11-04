@@ -1,5 +1,6 @@
 package lesson3
 
+import org.junit.jupiter.api.Tag
 import java.util.*
 import kotlin.test.*
 
@@ -105,6 +106,7 @@ abstract class AbstractHeadTailTest {
 
     protected fun doSubSetTest() {
         val smallSet: SortedSet<Int> = tree.subSet(3, 8)
+        (smallSet as KtBinaryTreeView).visualize()
         assertEquals(false, smallSet.contains(1))
         assertEquals(false, smallSet.contains(2))
         assertEquals(true, smallSet.contains(3))
@@ -150,5 +152,4 @@ abstract class AbstractHeadTailTest {
         assertEquals(11, set.size)
         assertEquals(14, tree.size)
     }
-
 }
