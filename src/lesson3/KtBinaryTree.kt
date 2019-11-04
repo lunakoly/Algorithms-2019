@@ -19,7 +19,7 @@ open class KtBinaryTree<T : Comparable<T>> : KtBinaryTreeBackend<T>() {
             var theSize = 0
 
             while (iterator.hasNext()) {
-                val value = iterator.next()
+                iterator.next()
                 theSize += 1
             }
 
