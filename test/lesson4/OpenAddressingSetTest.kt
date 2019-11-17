@@ -22,7 +22,7 @@ class OpenAddressingSetTest {
     }
 
     @Test
-    @Tag("ULTRA MEGA HARD")
+    @Tag("ULTRAMEGAHARD")
     fun remove() {
         val set = OpenAddressingSet<String>(16)
         assertTrue(set.isEmpty())
@@ -66,7 +66,7 @@ class OpenAddressingSetTest {
     }
 
     @Test
-    @Tag("Impossible for a human")
+    @Tag("ImpossibleForAHuman")
     fun iteratorRemove() {
         val neutral = setOf("Alpha", "Beta", "Omega")
         val set = OpenAddressingSet<String>(16)
