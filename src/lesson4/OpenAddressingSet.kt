@@ -10,6 +10,13 @@ class OpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T>(
 
     private val storage = Array<Any?>(capacity) { null }
 
+    /**
+     * Stores whether some cell has been assigned
+     * an item. It's needed to resolve and issue
+     * of overlapping indices and removed elements
+     */
+    private val storageUsed = Array(capacity) { false }
+
     override var size: Int = 0
 
     private fun T.startingIndex(): Int {
@@ -24,7 +31,7 @@ class OpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T>(
         var current = storage[index]
         var checked = 0
 
-        while (current != null && checked < capacity) {
+        while (storageUsed[index] && checked < capacity) {
             if (current == element) {
                 return true
             }
@@ -48,6 +55,7 @@ class OpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T>(
             current = storage[index]
         }
         storage[index] = element
+        storageUsed[index] = true
         size++
         return true
     }
@@ -63,7 +71,7 @@ class OpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T>(
         var index = startingIndex
         var current = storage[index]
 
-        while (current != null) {
+        while (storageUsed[index]) {
             if (current == element) {
                 storage[index] = null
                 size -= 1

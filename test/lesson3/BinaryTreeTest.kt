@@ -120,6 +120,7 @@ class BinaryTreeTest {
             val treeIt = treeSet.iterator()
             val binaryIt = binarySet.iterator()
             println("Traversing $list")
+//            binarySet.visualize()
 
 
             while (treeIt.hasNext()) {

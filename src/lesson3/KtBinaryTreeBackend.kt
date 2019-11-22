@@ -277,11 +277,6 @@ abstract class KtBinaryTreeBackend<T : Comparable<T>> : AbstractMutableSet<T>(),
          */
         private val nodes = LinkedList<Node<T>>()
         /**
-         * Determines if a node has been checked
-         * Used for next()
-         */
-        private val visited = mutableSetOf<Node<T>>()
-        /**
          * Used for deleting
          */
         private var current: Node<T>? = null
@@ -357,17 +352,24 @@ abstract class KtBinaryTreeBackend<T : Comparable<T>> : AbstractMutableSet<T>(),
             while (nodes.size > 0) {
                 val last = nodes.removeLast()
 
-                if (last.left != null && !visited.contains(last.left)) {
+                var wasLeftVisited = false
+
+                // if there's something to the left
+                // but current has already become bigger
+                // then it.
+                if (current != null && last.left != null) {
+                    wasLeftVisited = current!!.value >= last.left!!.value
+                }
+
+                if (last.left != null && !wasLeftVisited) {
                     nodes.add(last)
                     nodes.add(last.left!!)
-                } else if (!visited.contains(last)) {
-                    visited.add(last)
+                } else {
+                    current = last
 
                     if (last.right != null) {
                         nodes.add(last.right!!)
                     }
-
-                    current = last
 
                     if (satisfiesRange(last.value)) {
                         if (lastAllowed == last) {
@@ -399,9 +401,18 @@ abstract class KtBinaryTreeBackend<T : Comparable<T>> : AbstractMutableSet<T>(),
             val previous = current
 
             if (previous != null) {
+                // despite the fact that erase() will need to find
+                // the parent of previous I still think there's no
+                // point to try to do some optimizations here.
+                // even if we don't search for the parent the complexity
+                // will stay the same - O(logn). Because nodes doesn't
+                // really store the whole path (lefter shoulders only)
+                // we can't use it to determine the parent node and thus
+                // need to create one more list (mirroring nodes) for
+                // links to parents. so I prefer saving that memory
                 val (_, replacement) = erase(previous.value)
 
-                if (replacement != null && !visited.contains(replacement)) {
+                if (replacement != null && previous.value < replacement.value) {
                     // I assume it's Θ(1)
                     val end = nodes.lastOrNull()
 
@@ -423,7 +434,7 @@ abstract class KtBinaryTreeBackend<T : Comparable<T>> : AbstractMutableSet<T>(),
                     }
                 }
             } else {
-                throw NoSuchElementException()
+                throw IllegalStateException()
             }
         }
     }
@@ -446,8 +457,8 @@ abstract class KtBinaryTreeBackend<T : Comparable<T>> : AbstractMutableSet<T>(),
      * Найти множество всех элементов в диапазоне [fromElement, toElement)
      * Очень сложная
      *
-     *   Time Complexity: O(n),    n - number of nodes
-     * Memory Complexity: Θ(logn)
+     *   Time Complexity: Θ(1)
+     * Memory Complexity: Θ(1)
      */
     override fun subSet(fromElement: T, toElement: T): SortedSet<T> =
         KtBinaryTreeView(root, fromElement, toElement, ::lessOrEquals, ::less)
@@ -456,8 +467,8 @@ abstract class KtBinaryTreeBackend<T : Comparable<T>> : AbstractMutableSet<T>(),
      * Найти множество всех элементов меньше заданного
      * Сложная
      *
-     *   Time Complexity: O(n),    n - number of nodes
-     * Memory Complexity: Θ(logn)
+     *   Time Complexity: Θ(1)
+     * Memory Complexity: Θ(1)
      */
     override fun headSet(toElement: T): SortedSet<T> =
         KtBinaryTreeView(root, null, toElement, ::lessOrEquals, ::less)
@@ -466,8 +477,8 @@ abstract class KtBinaryTreeBackend<T : Comparable<T>> : AbstractMutableSet<T>(),
      * Найти множество всех элементов больше или равных заданного
      * Сложная
      *
-     *   Time Complexity: O(n),    n - number of nodes
-     * Memory Complexity: Θ(logn)
+     *   Time Complexity: Θ(1)
+     * Memory Complexity: Θ(1)
      */
     override fun tailSet(fromElement: T): SortedSet<T> =
         KtBinaryTreeView(root, fromElement, null, ::lessOrEquals, ::lessOrEquals)
