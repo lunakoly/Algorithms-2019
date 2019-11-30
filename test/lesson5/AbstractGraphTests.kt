@@ -10,6 +10,16 @@ abstract class AbstractGraphTests {
         return begin == other.begin || end == other.end || begin == other.end || end == other.begin
     }
 
+    private fun Graph.Edge.isSame(other: Graph.Edge): Boolean {
+        return begin == other.begin && end == other.end || begin == other.end && end == other.begin
+    }
+
+    // otherwise a list of the same edge repeated `size` times
+    // would be a satisfiable answer
+    private fun Graph.Edge.isCycleNeighbour(other: Graph.Edge): Boolean {
+        return isNeighbour(other) && !isSame(other)
+    }
+
     private fun List<Graph.Edge>.assert(shouldExist: Boolean, graph: Graph) {
         val edges = graph.edges
         if (shouldExist) {
@@ -21,10 +31,10 @@ abstract class AbstractGraphTests {
             assertTrue(edge in edges, "Edge $edge is not inside graph")
         }
         for (i in 0 until size - 1) {
-            assertTrue(this[i].isNeighbour(this[i + 1]), "Edges ${this[i]} & ${this[i + 1]} are not incident")
+            assertTrue(this[i].isCycleNeighbour(this[i + 1]), "Edges ${this[i]} & ${this[i + 1]} are not incident")
         }
         if (size > 1) {
-            assertTrue(this[0].isNeighbour(this[size - 1]), "Edges ${this[0]} & ${this[size - 1]} are not incident")
+            assertTrue(this[0].isCycleNeighbour(this[size - 1]), "Edges ${this[0]} & ${this[size - 1]} are not incident")
         }
     }
 
