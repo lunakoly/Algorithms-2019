@@ -237,8 +237,8 @@ fun Graph.findEulerLoop(): List<Graph.Edge> {
  * |
  * J ------------ K
  *
- *   Time Complexity: O(nm),    n - number of vertices
- * Memory Complexity: O(n + m), m - number of edges
+ *   Time Complexity: O(nm log(m)), n - number of vertices
+ * Memory Complexity: O(n + m),     m - number of edges
  */
 fun Graph.minimumSpanningTree(): Graph {
     // O(number of edges)
@@ -248,16 +248,18 @@ fun Graph.minimumSpanningTree(): Graph {
     // so we remove each cycle only ones and all cycles sum up
     // to the whole number of edges in total (so it must be
     // O(number of edges) but as with the previous task
-    // I suppose it's actually O(nm) & O(n + m))
+    // I suppose it's actually O(nm log(m)) & O(n + m))
     for (vertex in vertices) {
         do {
-            // O(nm)
+            // O(nm log(m))
             val cycle = findCycleFrom(vertex) {
+                // O(log(m))
                 it !in deleted
             }
 
             // remove the cycle
             if (cycle != null) {
+                // O(log(m))
                 deleted.add(cycle.first().first)
             }
         } while (cycle != null)
@@ -269,7 +271,7 @@ fun Graph.minimumSpanningTree(): Graph {
             addVertex(each.name)
         }
 
-        // Θ(number of edges)
+        // Θ(number of edges * log(number of edges))
         for (each in edges) {
             // is there a point in trying to analyze the complexity
             // of API-driven declaration style? I mean, if the implementation
@@ -280,6 +282,7 @@ fun Graph.minimumSpanningTree(): Graph {
             // (e. g. relying on separate Edge instances for each direction)
             // and so we can't know what public operations are cheaper to use
             // in our algorithm
+            // O(log(number of edges))
             if (each in deleted) {
                 continue
             }
@@ -443,7 +446,7 @@ fun Graph.largestIndependentVertexSet(): Set<Graph.Vertex> {
  *
  * Ответ: A, E, J, K, D, C, H, G, B, F, I
  *
- *   Time Complexity: O(n^2), n - number of vertices
+ *   Time Complexity: O(2^n), n - number of vertices
  * Memory Complexity: O(n)
  */
 fun Graph.longestSimplePath(): Path {
@@ -451,7 +454,7 @@ fun Graph.longestSimplePath(): Path {
      * Searches the longest simple path starting
      * from a particular vertex
      *
-     *   Time Complexity: O(n), n - number of vertices
+     *   Time Complexity: O(2^n), n - number of vertices
      * Memory Complexity: O(n)
      */
     fun findLongestSimplePath(first: Graph.Vertex): List<Graph.Vertex> {
@@ -476,7 +479,7 @@ fun Graph.longestSimplePath(): Path {
         // used to update changesIndex
         var previousIndex = 0
 
-        // dfs, O(number of vertices)
+        // dfs with dynamic history, O(2^n)
         while (stack.isNotEmpty()) {
             val (next, index) = stack.removeLast()
 
@@ -525,9 +528,9 @@ fun Graph.longestSimplePath(): Path {
     // O(number of vertices)
     var longestHistory = listOf<Graph.Vertex>()
 
-    // O(n^2)
+    // O(2^n)
     for (vertex in vertices) {
-        // O(number of vertices)
+        // O(2^n)
         val history = findLongestSimplePath(vertex)
 
         if (history.size > longestHistory.size) {
