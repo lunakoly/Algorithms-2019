@@ -2,7 +2,10 @@
 
 package lesson6
 
+import java.io.File
+import java.util.*
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Runs usual lcs but without remembering
@@ -161,9 +164,77 @@ fun longestCommonSubSequence(first: String, second: String): String {
  * Если самых длинных возрастающих подпоследовательностей несколько (как в примере),
  * то вернуть ту, в которой числа расположены раньше (приоритет имеют первые числа).
  * В примере ответами являются 2, 8, 9, 12 или 2, 5, 9, 12 -- выбираем первую из них.
+ *
+ *   Time Complexity: Θ(n), n - size of the list
+ * Memory Complexity: Θ(n)
  */
 fun longestIncreasingSubSequence(list: List<Int>): List<Int> {
-    TODO()
+    if (list.isEmpty()) {
+        return emptyList()
+    }
+
+    if (list.size == 1) {
+        return listOf(list.first())
+    }
+
+    // length of the longest possible
+    // sequence that i-th number can be
+    // a part of
+    // Θ(n)
+    val lengths = IntArray(list.size) { 1 }
+    // previous number needed to
+    // reconstruct the chain
+    // Θ(n)
+    val previous = IntArray(list.size) { -1 }
+
+    // Θ(n^2)
+    for (i in 1 until list.size) {
+        var maxFound = list[0] < list[i]
+        var max = 0
+
+        // check all previous and find the
+        // one that's less than list[i] but
+        // has the max calculated length
+        // Θ(n)
+        for (j in 0 until i) {
+            if (
+                list[j] < list[i] &&
+                lengths[max] < lengths[j]
+            ) {
+                maxFound = true
+                max = j
+            }
+        }
+
+        // make i point to it as a previous
+        // node
+        if (maxFound) {
+            previous[i] = max
+            lengths[i] = lengths[max] + 1
+        }
+    }
+
+    // O(n)
+    val sequence = LinkedList<Int>()
+    // index of the last number of the longest
+    // sequence
+    var index = 0
+
+    // find index
+    for (it in 1 until lengths.size) {
+        if (lengths[index] < lengths[it]) {
+            index = it
+        }
+    }
+
+    // O(n)
+    while (index >= 0) {
+        sequence.add(list[index])
+        index = previous[index]
+    }
+
+    // Θ(n)
+    return sequence.reversed()
 }
 
 /**
@@ -185,9 +256,53 @@ fun longestIncreasingSubSequence(list: List<Int>): List<Int> {
  * Необходимо найти маршрут с минимальным весом и вернуть этот минимальный вес.
  *
  * Здесь ответ 2 + 3 + 4 + 1 + 2 = 12
+ *
+ *   Time Complexity: Θ(nm), n - width
+ * Memory Complexity: Θ(nm), m - height
  */
 fun shortestPathOnField(inputName: String): Int {
-    TODO()
+    // Θ(width * height)
+    val field = ArrayList<IntArray>()
+
+    // Θ(width * height)
+    File(inputName).forEachLine { line ->
+        // Θ(width)
+        field.add(line.split(' ').map { it.toInt() }.toIntArray())
+    }
+
+    if (
+        field.isEmpty() ||
+        field.first().isEmpty()
+    ) {
+        return 0
+    }
+
+    val width = field.first().size
+    val height = field.size
+
+    // top row
+    // Θ(width)
+    for (j in 1 until width) {
+        field[0][j] += field[0][j - 1]
+    }
+
+    // left column
+    // Θ(height)
+    for (i in 1 until height) {
+        field[i][0] += field[i - 1][0]
+    }
+
+    // Θ(width * height)
+    for (i in 1 until height) {
+        for (j in 1 until width) {
+            val sumWithUpper = field[i - 1][j] + field[i][j]
+            val sumWithLefter = field[i][j - 1] + field[i][j]
+            val sumWithDiagonal = field[i - 1][j - 1] + field[i][j]
+            field[i][j] = min(min(sumWithLefter, sumWithUpper), sumWithDiagonal)
+        }
+    }
+
+    return field[height - 1][width - 1]
 }
 
 // Задачу "Максимальное независимое множество вершин в графе без циклов"
